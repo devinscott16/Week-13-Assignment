@@ -1,38 +1,49 @@
 $(document).ready(function () {
-  const API_URL = "http://localhost:3001/materials"; // Your JSON Server endpoint
+  const API_URL = "http://localhost:3001/materials"; // JSON Server
 
   // Fetch materials from JSON Server
-  function fetchMaterials() {
-    $.get(API_URL, function (materials) {
-      $("#materialList").empty();
-      materials.forEach((material) => {
-        let materialItem = `<li class="list-group-item d-flex justify-content-between align-items-center">
-                      <span class="material-text ${
-                        material.purchased ? "purchased" : ""
-                      }">${material.text}</span>
-                      <div>
-                          <button class="btn btn-sm btn-secondary editMaterial" data-id="${
-                            material.id
-                          }">Edit</button>
-                          <button class="btn btn-sm btn-success toggleMaterial" data-id="${
-                            material.id
-                          }">
-                              ${material.purchased ? "Buy" : "Purchased"}
-                          </button>
-                          <button class="btn btn-sm btn-danger deleteMaterial" data-id="${
-                            material.id
-                          }">Delete</button>
-                      </div>
-                  </li>`;
-        $("#materialList").append(materialItem);
-      });
+  function fetchMaterials(): void {
+    $.get(
+      API_URL,
+      function (materials: { id: number; text: string; purchased: boolean }[]) {
+        $("#materialList").empty();
+        materials.forEach((material) => {
+          let materialItem = `<li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span class="material-text ${
+                          material.purchased ? "purchased" : ""
+                        }">
+                            ${material.text}
+                        </span>
+                        <div>
+                            <button class="btn btn-sm btn-secondary editMaterial" data-id="${
+                              material.id
+                            }">
+                                Edit
+                            </button>
+                            <button class="btn btn-sm btn-success toggleMaterial" data-id="${
+                              material.id
+                            }">
+                                ${material.purchased ? "Buy" : "Purchased"}
+                            </button>
+                            <button class="btn btn-sm btn-danger deleteMaterial" data-id="${
+                              material.id
+                            }">
+                                Delete
+                            </button>
+                        </div>
+                    </li>`;
+          $("#materialList").append(materialItem);
+        });
+      }
+    ).fail((jqXHR, textStatus, errorThrown) => {
+      console.error("Error fetching materials:", textStatus, errorThrown);
     });
   }
 
   // Add Material
-  $("form").submit(function (event) {
+  $("form").submit(function (event: JQuery.SubmitEvent) {
     event.preventDefault();
-    let materialText = $("#addMaterial").val().trim();
+    let materialText: string = ($("#addMaterial").val() as string).trim();
 
     if (materialText !== "") {
       $.ajax({
@@ -54,34 +65,44 @@ $(document).ready(function () {
   });
 
   // Toggle Purchased Status
-  $("#materialList").on("click", ".toggleMaterial", function () {
-    let materialId = $(this).data("id");
-    let textElement = $(this).closest("li").find(".material-text");
-    let isPurchased = textElement.hasClass("purchased");
+  $("#materialList").on(
+    "click",
+    ".toggleMaterial",
+    function (event: JQuery.ClickEvent) {
+      let button = $(event.currentTarget);
+      let materialId = button.data("id") as number;
+      let textElement = button.closest("li").find(".material-text");
+      let isPurchased = textElement.hasClass("purchased");
 
-    $.ajax({
-      url: `${API_URL}/${materialId}`,
-      method: "PATCH",
-      contentType: "application/json",
-      data: JSON.stringify({ purchased: !isPurchased }),
-      success: function () {
-        fetchMaterials(); // Refresh list
-      },
-    });
-  });
+      $.ajax({
+        url: `${API_URL}/${materialId}`,
+        method: "PATCH",
+        contentType: "application/json",
+        data: JSON.stringify({ purchased: !isPurchased }),
+        success: function () {
+          fetchMaterials(); // Refresh list
+        },
+      });
+    }
+  );
 
   // Delete Material
-  $("#materialList").on("click", ".deleteMaterial", function () {
-    let materialId = $(this).data("id");
+  $("#materialList").on(
+    "click",
+    ".deleteMaterial",
+    function (event: JQuery.ClickEvent) {
+      let button = $(event.currentTarget);
+      let materialId = button.data("id") as number;
 
-    $.ajax({
-      url: `${API_URL}/${materialId}`,
-      method: "DELETE",
-      success: function () {
-        fetchMaterials(); // Refresh list
-      },
-    });
-  });
+      $.ajax({
+        url: `${API_URL}/${materialId}`,
+        method: "DELETE",
+        success: function () {
+          fetchMaterials(); // Refresh list
+        },
+      });
+    }
+  );
 
   // Fetch materials on page load
   fetchMaterials();
