@@ -1,2 +1,2 @@
-import "bootstrap/dist/css/bootstrap.min.css";
-import ".src/style.css";
+import $ from "jquery";
+import "bootstrap";
